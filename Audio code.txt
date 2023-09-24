@@ -1,0 +1,154 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
+
+char input[12];
+int count = 0;
+
+int a;
+
+// Use an array to store product quantities and prices
+int products[4] = {0, 0, 0, 0};
+double prices[4] = {10.00, 20.00, 25.00, 0.00}; // Add prices for your products
+
+double total = 0;
+int count_prod = 0;
+
+void setup()
+{
+  pinMode(A4, INPUT_PULLUP);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+
+  lcd.clear();
+  Wire.begin();
+  Serial.begin(9600);
+  lcd.setCursor(0, 0);
+  lcd.print(" AUTOMATIC BILL");
+  delay(2000);
+  lcd.setCursor(0, 1);
+  lcd.print(" SHOPPING CART ");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("WELCOME TO");
+  delay(2000);
+  lcd.setCursor(3, 1);
+  lcd.print("SUPER MARKET");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Plz Add iTem");
+}
+
+void loop()
+{
+  count = 0;
+  while (Serial.available() && count < 12)
+  {
+    input[count] = Serial.read();
+    count++;
+    delay(5);
+  }
+  int a = digitalRead(A4);
+
+  if (a == 1)
+  {
+    for (int i = 0; i < 3; i++)
+    {
+      if (strncmp(input, "2700227A344B", 12) == 0)
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("Butter Added       ");
+        lcd.setCursor(0, 1);
+        lcd.print("Price :- 10.00      ");
+        products[0]++;
+        total += prices[0];
+        count_prod++;
+        break;
+      }
+      else if (strncmp(input, "4000350ABAC5", 12) == 0)
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("Milk Added       ");
+        lcd.setCursor(0, 1);
+        lcd.print("Price :- 20.00      ");
+        products[1]++;
+        total += prices[1];
+        count_prod++;
+        break;
+      }
+      else if (strncmp(input, "03007C2DA0F2", 12) == 0)
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("Tea Added       ");
+        lcd.setCursor(0, 1);
+        lcd.print("Price :- 25.00      ");
+        products[2]++;
+        total += prices[2];
+        count_prod++;
+        break;
+      }
+    }
+    digitalWrite(4, HIGH);
+    digitalWrite(5, HIGH);
+    digitalWrite(6, LOW);
+    delay(2000);
+    digitalWrite(4, LOW);
+    digitalWrite(5, LOW);
+    digitalWrite(6, HIGH);
+  }
+  else if (a == 0)
+  {
+    for (int i = 0; i < 3; i++)
+    {
+      if (strncmp(input, "2700227A344B", 12) == 0 && products[0] > 0)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Butter Removed!!!        ");
+        products[0]--;
+        total -= prices[0];
+        count_prod--;
+        break;
+      }
+      else if (strncmp(input, "4000350ABAC5", 12) == 0 && products[1] > 0)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Milk Removed!!!        ");
+        products[1]--;
+        total -= prices[1];
+        count_prod--;
+        break;
+      }
+      else if (strncmp(input, "03007C2DA0F2", 12) == 0 && products[2] > 0)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Tea Removed!!!        ");
+        products[2]--;
+        total -= prices[2];
+        count_prod--;
+        break;
+      }
+    }
+    if (count_prod > 0)
+    {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Total Price :-");
+      lcd.setCursor(0, 1);
+      lcd.print(total);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Not in cart!!!        ");
+    }
+  }
+}
